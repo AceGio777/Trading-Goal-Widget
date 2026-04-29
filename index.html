@@ -61,13 +61,20 @@
 </div>
 <div id="content"></div>
 <script>
-const state = {
+// Load state from localStorage or use defaults
+const savedState = localStorage.getItem('tradingTrackerState');
+const state = savedState ? JSON.parse(savedState) : {
   weekly:  { goal: 1000,  current: 0 },
   monthly: { goal: 4000,  current: 0 },
   yearly:  { goal: 50000, current: 0 }
 };
+
 let tab = 'weekly';
 let editing = false;
+
+function saveToLocalStorage() {
+  localStorage.setItem('tradingTrackerState', JSON.stringify(state));
+}
 
 function switchTab(t) {
   tab = t;
@@ -154,6 +161,7 @@ function saveGoal() {
   if (!isNaN(val) && val > 0) {
     state[tab].goal = val;
     editing = false;
+    saveToLocalStorage(); // Save update
     render();
   }
 }
@@ -162,6 +170,7 @@ function updateCurrent(val) {
   const v = parseFloat(val);
   if (!isNaN(v)) {
     state[tab].current = v;
+    saveToLocalStorage(); // Save update
     updateStats();
   }
 }
