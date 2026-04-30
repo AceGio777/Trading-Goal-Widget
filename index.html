@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Elite Performance Tracker | Pro Edition</title>
+<title>Elite Performance Tracker | Cloud Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet" />
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -32,13 +36,11 @@
   .goal-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
   .goal-main { font-family: Impact, sans-serif; font-size: 52px; line-height: 1; letter-spacing: -1px; color: var(--text); }
 
-  /* Progress Bar */
   .progress-container { margin-bottom: 20px; }
   .bar-bg { height: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 8px; }
-  .bar-fill { height: 100%; width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px transparent; }
+  .bar-fill { height: 100%; width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
   .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
 
-  /* Stats Grid */
   .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-box { 
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
@@ -47,7 +49,6 @@
   }
   .rem-val { font-family: Impact, sans-serif; font-size: 32px; color: var(--text); line-height: 1; margin-top: 5px; }
   
-  /* Badge & Arrows */
   .status-badge { 
     font-family: var(--syne); font-size: 10px; text-transform: uppercase; font-weight: 700;
     padding: 6px 12px; border-radius: 4px; display: inline-block; position: relative; z-index: 2; margin-top: 5px;
@@ -61,50 +62,35 @@
   .down-anim { animation: fadeDown 2s infinite linear; }
   .up-anim { animation: fadeUp 2s infinite linear; }
 
-  /* Modal Overlay */
-  .modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.85); z-index: 100; display: none;
-    align-items: center; justify-content: center; backdrop-filter: blur(4px);
-  }
-  .modal-content {
-    background: var(--surface); border: 1px solid var(--border); padding: 25px;
-    border-radius: 15px; width: 85%; max-width: 300px; text-align: center;
-  }
-  .modal input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--accent);
-    padding: 15px; border-radius: 8px; font-family: var(--mono); font-size: 20px; text-align: center;
-    margin: 15px 0; outline: none;
-  }
-  .btn-action {
-    width: 100%; background: var(--accent); color: #0e0e0f; border: none;
-    padding: 12px; border-radius: 8px; font-family: var(--syne); font-weight: 700;
-    text-transform: uppercase; cursor: pointer;
-  }
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-content { background: var(--surface); border: 1px solid var(--border); padding: 25px; border-radius: 15px; width: 85%; max-width: 300px; text-align: center; }
+  .modal input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--accent); padding: 15px; border-radius: 8px; font-family: var(--mono); font-size: 20px; text-align: center; margin: 15px 0; outline: none; }
+  .btn-action { width: 100%; background: var(--accent); color: #0e0e0f; border: none; padding: 12px; border-radius: 8px; font-family: var(--syne); font-weight: 700; text-transform: uppercase; cursor: pointer; }
 
-  .edit-goal-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-    padding: 6px 10px; border-radius: 6px; font-size: 9px; cursor: pointer; text-transform: uppercase;
-  }
+  .edit-goal-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 6px; font-size: 9px; cursor: pointer; text-transform: uppercase; }
+  #auth-status { font-size: 8px; color: var(--muted); text-transform: uppercase; margin-top: 5px; }
 </style>
 </head>
 <body data-theme="dark">
 
   <div class="header">
-    <button class="edit-goal-btn" onclick="openModal()">Set Goal</button>
+    <div style="display: flex; flex-direction: column;">
+        <button class="edit-goal-btn" onclick="openModal()">Set Goal</button>
+        <div id="auth-status">Offline</div>
+    </div>
     <button class="edit-goal-btn" style="border-radius: 50%; width: 30px; height: 30px; padding:0;" onclick="toggleTheme()">🌓</button>
   </div>
 
   <div class="nav-tabs">
     <button class="tab-btn active" id="btn-weekly" onclick="setMode('weekly')">Weekly</button>
-    <button class="tab-btn" id="btn-monthly" onclick="setMode('monthly')">Monthly</button>
-    <button class="tab-btn" id="btn-yearly" onclick="setMode('yearly')">Yearly</button>
+    <button id="btn-monthly" class="tab-btn" onclick="setMode('monthly')">Monthly</button>
+    <button id="btn-yearly" class="tab-btn" onclick="setMode('yearly')">Yearly</button>
   </div>
 
   <div class="goal-card">
     <div class="goal-sub" id="mode-label">Weekly P&L Goal</div>
     <div class="goal-main" id="display-goal">$0</div>
-    <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 8px; font-weight: 700;">0 Days Left</div>
+    <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 8px; font-weight: 700;">Loading...</div>
   </div>
 
   <div class="progress-container">
@@ -125,7 +111,7 @@
     <div class="stat-box" id="status-container">
       <div class="goal-sub">Status</div>
       <div id="arrow-layer"></div>
-      <div class="status-badge" id="status-badge">Awaiting Data</div>
+      <div class="status-badge" id="status-badge">Awaiting Sync</div>
     </div>
   </div>
 
@@ -139,71 +125,59 @@
   </div>
 
 <script>
+  // --- FIREBASE CONFIG (SAME AS JOURNAL) ---
+  const firebaseConfig = {
+  apiKey: "AIzaSyBaUuA3BTSTZG5jV4GzIEb0WaVXflbLprw",
+  authDomain: "ace-gio-s-day-trading-notion.firebaseapp.com",
+  projectId: "ace-gio-s-day-trading-notion",
+  storageBucket: "ace-gio-s-day-trading-notion.firebasestorage.app",
+  messagingSenderId: "676599193285",
+  appId: "1:676599193285:web:a5f239951e83fb3a87daac",
+  measurementId: "G-3KL59NZLMP"
+};
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
   let currentMode = 'weekly';
-  
-  // Load goals from local storage or set defaults
-  let goals = JSON.parse(localStorage.getItem('trading_goals_config')) || {
-    weekly: 600,
-    monthly: 2500,
-    yearly: 30000
-  };
+  let globalHistory = [];
+  let goals = { weekly: 600, monthly: 2500, yearly: 30000 };
 
-  function toggleTheme() {
-    const b = document.body;
-    b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-  }
-
-  function openModal() {
-    document.getElementById('goal-modal').style.display = 'flex';
-    document.getElementById('modal-title').textContent = `Set ${currentMode} Goal`;
-    document.getElementById('goal-input').value = goals[currentMode];
-    document.getElementById('goal-input').focus();
-  }
-
-  function closeModal() {
-    document.getElementById('goal-modal').style.display = 'none';
-  }
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById('auth-status').textContent = "Cloud Active";
+      // 1. Sync Goals from Cloud
+      db.ref('users/' + user.uid + '/goals').on('value', s => {
+        if(s.val()) goals = s.val();
+        updateTracker();
+      });
+      // 2. Sync Trade History from Cloud
+      db.ref('users/' + user.uid + '/history').on('value', s => {
+        globalHistory = s.val() || [];
+        updateTracker();
+      });
+    } else {
+      document.getElementById('auth-status').textContent = "Login Required";
+    }
+  });
 
   function saveGoal() {
     const newVal = parseFloat(document.getElementById('goal-input').value);
-    if(newVal > 0) {
+    if(newVal > 0 && auth.currentUser) {
       goals[currentMode] = newVal;
-      localStorage.setItem('trading_goals_config', JSON.stringify(goals));
+      db.ref('users/' + auth.currentUser.uid + '/goals').set(goals);
       closeModal();
-      updateTracker();
-    }
-  }
-
-  function setMode(mode) {
-    currentMode = mode;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`btn-${mode}`).classList.add('active');
-    updateTracker();
-  }
-
-  function getDaysLeft() {
-    const now = new Date();
-    if (currentMode === 'weekly') {
-      let days = 6 - now.getDay(); // Saturday reset
-      if (days < 0) days = 6; 
-      return days === 0 ? "Last Day!" : days + " Days Left";
-    } else if (currentMode === 'monthly') {
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      return (lastDay - now.getDate()) + " Days Left";
-    } else {
-      const endOfYear = new Date(now.getFullYear(), 11, 31);
-      const diff = endOfYear - now;
-      return Math.floor(diff / (1000 * 60 * 60 * 24)) + " Days Left";
     }
   }
 
   function updateTracker() {
-    const history = JSON.parse(localStorage.getItem('notion_trade_history') || '[]');
     const goal = goals[currentMode];
     const now = new Date();
     let currentPnl = 0;
 
-    history.forEach(trade => {
+    // Filter by Real Capital ('live') trades only
+    globalHistory.filter(t => (t.type || 'live') === 'live').forEach(trade => {
       const tDate = new Date(trade.date);
       let inScope = false;
 
@@ -217,14 +191,12 @@
       } else {
         if (tDate.getFullYear() === now.getFullYear()) inScope = true;
       }
-
-      if (inScope) currentPnl += trade.pnl;
+      if (inScope) currentPnl += (trade.pnl || 0);
     });
 
     const remaining = goal - currentPnl;
-    const pct = Math.min(Math.round((currentPnl / goal) * 100), 100);
+    const pct = goal > 0 ? Math.min(Math.round((currentPnl / goal) * 100), 100) : 0;
 
-    // DOM Updates
     document.getElementById('display-goal').textContent = `$${goal.toLocaleString()}`;
     document.getElementById('remaining-val').textContent = `$${(remaining > 0 ? remaining : 0).toLocaleString()}`;
     document.getElementById('current-pnl-text').textContent = `$${currentPnl.toLocaleString()} Earned`;
@@ -243,20 +215,39 @@
       badge.textContent = "Goal Smashed";
       badge.className = "status-badge on-track";
       fill.style.backgroundColor = "var(--green)";
-      fill.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
       spawnArrows(arrowLayer, 'up');
     } else if (pct > 50) {
       badge.textContent = "On Pace";
       badge.className = "status-badge on-track";
       fill.style.backgroundColor = "var(--accent)";
-      fill.style.boxShadow = "0 0 15px rgba(34, 211, 238, 0.3)";
       spawnArrows(arrowLayer, 'up');
     } else {
       badge.textContent = "Behind";
       badge.className = "status-badge off-track";
       fill.style.backgroundColor = "var(--red)";
-      fill.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.3)";
       spawnArrows(arrowLayer, 'down');
+    }
+  }
+
+  /* Utility Functions */
+  function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-${mode}`).classList.add('active');
+    updateTracker();
+  }
+
+  function getDaysLeft() {
+    const now = new Date();
+    if (currentMode === 'weekly') {
+      let days = 6 - now.getDay();
+      return days === 0 ? "Last Day!" : days + " Days Left";
+    } else if (currentMode === 'monthly') {
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      return (lastDay - now.getDate()) + " Days Left";
+    } else {
+      const endOfYear = new Date(now.getFullYear(), 11, 31);
+      return Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24)) + " Days Left";
     }
   }
 
@@ -272,9 +263,9 @@
     }
   }
 
-  // Syncs with the Journal widget automatically
-  window.addEventListener('storage', updateTracker);
-  window.onload = updateTracker;
+  function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
+  function openModal() { document.getElementById('goal-modal').style.display = 'flex'; document.getElementById('modal-title').textContent = `Set ${currentMode} Goal`; document.getElementById('goal-input').value = goals[currentMode]; document.getElementById('goal-input').focus(); }
+  function closeModal() { document.getElementById('goal-modal').style.display = 'none'; }
 </script>
 </body>
 </html>
