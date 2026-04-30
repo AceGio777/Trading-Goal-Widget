@@ -22,6 +22,19 @@
   }
   body { background: var(--bg); color: var(--text); font-family: var(--mono); padding: 15px; transition: 0.3s; overflow-x: hidden; }
 
+  /* LOCK SCREEN STYLES */
+  #lock-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 500; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px;
+  }
+  .lock-icon { font-size: 40px; margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--accent)); }
+  .lock-text { font-family: var(--syne); font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+  
+  /* MAIN CONTENT (HIDDEN BY DEFAULT) */
+  #main-wrapper { display: none; }
+
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
   .title { font-family: var(--syne); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
 
@@ -62,7 +75,7 @@
   .down-anim { animation: fadeDown 2s infinite linear; }
   .up-anim { animation: fadeUp 2s infinite linear; }
 
-  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 600; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .modal-content { background: var(--surface); border: 1px solid var(--border); padding: 25px; border-radius: 15px; width: 85%; max-width: 300px; text-align: center; }
   .modal input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--accent); padding: 15px; border-radius: 8px; font-family: var(--mono); font-size: 20px; text-align: center; margin: 15px 0; outline: none; }
   .btn-action { width: 100%; background: var(--accent); color: #0e0e0f; border: none; padding: 12px; border-radius: 8px; font-family: var(--syne); font-weight: 700; text-transform: uppercase; cursor: pointer; }
@@ -73,45 +86,53 @@
 </head>
 <body data-theme="dark">
 
-  <div class="header">
-    <div style="display: flex; flex-direction: column;">
-        <button class="edit-goal-btn" onclick="openModal()">Set Goal</button>
-        <div id="auth-status">Offline</div>
-    </div>
-    <button class="edit-goal-btn" style="border-radius: 50%; width: 30px; height: 30px; padding:0;" onclick="toggleTheme()">🌓</button>
+  <div id="lock-screen">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-text">Terminal Locked</div>
+    <div style="font-size: 9px; color: var(--muted); margin-top: 10px; max-width: 200px;">Please authenticate via the Main Journal Terminal to unlock performance data.</div>
   </div>
 
-  <div class="nav-tabs">
-    <button class="tab-btn active" id="btn-weekly" onclick="setMode('weekly')">Weekly</button>
-    <button id="btn-monthly" class="tab-btn" onclick="setMode('monthly')">Monthly</button>
-    <button id="btn-yearly" class="tab-btn" onclick="setMode('yearly')">Yearly</button>
-  </div>
-
-  <div class="goal-card">
-    <div class="goal-sub" id="mode-label">Weekly P&L Goal</div>
-    <div class="goal-main" id="display-goal">$0</div>
-    <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 8px; font-weight: 700;">Loading...</div>
-  </div>
-
-  <div class="progress-container">
-    <div class="bar-bg">
-      <div class="bar-fill" id="progress-fill"></div>
+  <div id="main-wrapper">
+    <div class="header">
+      <div style="display: flex; flex-direction: column;">
+          <button class="edit-goal-btn" onclick="openModal()">Set Goal</button>
+          <div id="auth-status">Offline</div>
+      </div>
+      <button class="edit-goal-btn" style="border-radius: 50%; width: 30px; height: 30px; padding:0;" onclick="toggleTheme()">🌓</button>
     </div>
-    <div class="progress-labels">
-      <span id="current-pnl-text">$0 Earned</span>
-      <span id="pct-text">0%</span>
-    </div>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat-box">
-      <div class="goal-sub">Remaining</div>
-      <div class="rem-val" id="remaining-val">$0</div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" id="btn-weekly" onclick="setMode('weekly')">Weekly</button>
+      <button id="btn-monthly" class="tab-btn" onclick="setMode('monthly')">Monthly</button>
+      <button id="btn-yearly" class="tab-btn" onclick="setMode('yearly')">Yearly</button>
     </div>
-    <div class="stat-box" id="status-container">
-      <div class="goal-sub">Status</div>
-      <div id="arrow-layer"></div>
-      <div class="status-badge" id="status-badge">Awaiting Sync</div>
+
+    <div class="goal-card">
+      <div class="goal-sub" id="mode-label">Weekly P&L Goal</div>
+      <div class="goal-main" id="display-goal">$0</div>
+      <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 8px; font-weight: 700;">Loading...</div>
+    </div>
+
+    <div class="progress-container">
+      <div class="bar-bg">
+        <div class="bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-labels">
+        <span id="current-pnl-text">$0 Earned</span>
+        <span id="pct-text">0%</span>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="goal-sub">Remaining</div>
+        <div class="rem-val" id="remaining-val">$0</div>
+      </div>
+      <div class="stat-box" id="status-container">
+        <div class="goal-sub">Status</div>
+        <div id="arrow-layer"></div>
+        <div class="status-badge" id="status-badge">Awaiting Sync</div>
+      </div>
     </div>
   </div>
 
@@ -127,14 +148,14 @@
 <script>
   // --- FIREBASE CONFIG (SAME AS JOURNAL) ---
   const firebaseConfig = {
-  apiKey: "AIzaSyBaUuA3BTSTZG5jV4GzIEb0WaVXflbLprw",
-  authDomain: "ace-gio-s-day-trading-notion.firebaseapp.com",
-  projectId: "ace-gio-s-day-trading-notion",
-  storageBucket: "ace-gio-s-day-trading-notion.firebasestorage.app",
-  messagingSenderId: "676599193285",
-  appId: "1:676599193285:web:a5f239951e83fb3a87daac",
-  measurementId: "G-3KL59NZLMP"
-};
+    apiKey: "AIzaSyBaUuA3BTSTZG5jV4GzIEb0WaVXflbLprw",
+    authDomain: "ace-gio-s-day-trading-notion.firebaseapp.com",
+    projectId: "ace-gio-s-day-trading-notion",
+    storageBucket: "ace-gio-s-day-trading-notion.firebasestorage.app",
+    messagingSenderId: "676599193285",
+    appId: "1:676599193285:web:a5f239951e83fb3a87daac",
+    measurementId: "G-3KL59NZLMP"
+  };
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
@@ -146,7 +167,11 @@
 
   auth.onAuthStateChanged(user => {
     if (user) {
+      // UNLOCK UI
+      document.getElementById('lock-screen').style.display = 'none';
+      document.getElementById('main-wrapper').style.display = 'block';
       document.getElementById('auth-status').textContent = "Cloud Active";
+      
       // 1. Sync Goals from Cloud
       db.ref('users/' + user.uid + '/goals').on('value', s => {
         if(s.val()) goals = s.val();
@@ -158,6 +183,9 @@
         updateTracker();
       });
     } else {
+      // LOCK UI
+      document.getElementById('lock-screen').style.display = 'flex';
+      document.getElementById('main-wrapper').style.display = 'none';
       document.getElementById('auth-status').textContent = "Login Required";
     }
   });
@@ -176,7 +204,6 @@
     const now = new Date();
     let currentPnl = 0;
 
-    // Filter by Real Capital ('live') trades only
     globalHistory.filter(t => (t.type || 'live') === 'live').forEach(trade => {
       const tDate = new Date(trade.date);
       let inScope = false;
@@ -229,7 +256,6 @@
     }
   }
 
-  /* Utility Functions */
   function setMode(mode) {
     currentMode = mode;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
