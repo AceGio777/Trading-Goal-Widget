@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Elite Performance Tracker</title>
+<title>Elite Performance Tracker | Pro Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,17 +16,11 @@
     --bg: #f4f4f5; --surface: #ffffff; --border: #e4e4e7;
     --text: #09090b; --muted: #71717a; --accent: #0891b2;
   }
-  body { background: var(--bg); color: var(--text); font-family: var(--mono); padding: 15px; transition: 0.3s; overflow: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); padding: 15px; transition: 0.3s; overflow-x: hidden; }
 
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
   .title { font-family: var(--syne); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
 
-  /* Goal Header */
-  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 15px; }
-  .goal-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-  .goal-main { font-family: Impact, sans-serif; font-size: 48px; line-height: 1; letter-spacing: -1px; }
-
-  /* Nav Tabs */
   .nav-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
   .tab-btn { 
     flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--muted); 
@@ -34,54 +28,83 @@
   }
   .tab-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(34, 211, 238, 0.05); }
 
+  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 15px; position: relative; }
+  .goal-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+  .goal-main { font-family: Impact, sans-serif; font-size: 52px; line-height: 1; letter-spacing: -1px; color: var(--text); }
+
   /* Progress Bar */
   .progress-container { margin-bottom: 20px; }
-  .bar-bg { height: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 8px; }
-  .bar-fill { height: 100%; width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+  .bar-bg { height: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 8px; }
+  .bar-fill { height: 100%; width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px transparent; }
   .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
 
-  /* Status & Remaining Section */
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  /* Stats Grid */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-box { 
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
-    padding: 15px; text-align: center; position: relative; overflow: hidden;
+    padding: 15px; text-align: center; position: relative; overflow: hidden; height: 90px;
+    display: flex; flex-direction: column; justify-content: center;
   }
-  .rem-val { font-family: Impact, sans-serif; font-size: 28px; color: var(--text); }
+  .rem-val { font-family: Impact, sans-serif; font-size: 32px; color: var(--text); line-height: 1; margin-top: 5px; }
   
-  /* Status Badge & Arrows */
+  /* Badge & Arrows */
   .status-badge { 
     font-family: var(--syne); font-size: 10px; text-transform: uppercase; font-weight: 700;
-    padding: 5px 10px; border-radius: 4px; display: inline-block; position: relative; z-index: 2;
+    padding: 6px 12px; border-radius: 4px; display: inline-block; position: relative; z-index: 2; margin-top: 5px;
   }
   .off-track { background: rgba(248, 113, 113, 0.1); color: var(--red); border: 1px solid var(--red); }
   .on-track { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid var(--green); }
 
   .arrow { position: absolute; font-size: 18px; opacity: 0; pointer-events: none; z-index: 1; }
-  @keyframes fadeDown { 0% { transform: translateY(-20px); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(20px); opacity: 0; } }
-  @keyframes fadeUp { 0% { transform: translateY(20px); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(-20px); opacity: 0; } }
+  @keyframes fadeDown { 0% { transform: translateY(-25px); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(25px); opacity: 0; } }
+  @keyframes fadeUp { 0% { transform: translateY(25px); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(-25px); opacity: 0; } }
   .down-anim { animation: fadeDown 2s infinite linear; }
   .up-anim { animation: fadeUp 2s infinite linear; }
 
-  .theme-toggle { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px; border-radius: 4px; cursor: pointer; }
+  /* Modal Overlay */
+  .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.85); z-index: 100; display: none;
+    align-items: center; justify-content: center; backdrop-filter: blur(4px);
+  }
+  .modal-content {
+    background: var(--surface); border: 1px solid var(--border); padding: 25px;
+    border-radius: 15px; width: 85%; max-width: 300px; text-align: center;
+  }
+  .modal input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--accent);
+    padding: 15px; border-radius: 8px; font-family: var(--mono); font-size: 20px; text-align: center;
+    margin: 15px 0; outline: none;
+  }
+  .btn-action {
+    width: 100%; background: var(--accent); color: #0e0e0f; border: none;
+    padding: 12px; border-radius: 8px; font-family: var(--syne); font-weight: 700;
+    text-transform: uppercase; cursor: pointer;
+  }
+
+  .edit-goal-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    padding: 6px 10px; border-radius: 6px; font-size: 9px; cursor: pointer; text-transform: uppercase;
+  }
 </style>
 </head>
 <body data-theme="dark">
 
   <div class="header">
-    <span class="title">Goal Monitor</span>
-    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <button class="edit-goal-btn" onclick="openModal()">Set Goal</button>
+    <button class="edit-goal-btn" style="border-radius: 50%; width: 30px; height: 30px; padding:0;" onclick="toggleTheme()">🌓</button>
   </div>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="setMode('weekly', this)">Weekly</button>
-    <button class="tab-btn" onclick="setMode('monthly', this)">Monthly</button>
-    <button class="tab-btn" onclick="setMode('yearly', this)">Yearly</button>
+    <button class="tab-btn active" id="btn-weekly" onclick="setMode('weekly')">Weekly</button>
+    <button class="tab-btn" id="btn-monthly" onclick="setMode('monthly')">Monthly</button>
+    <button class="tab-btn" id="btn-yearly" onclick="setMode('yearly')">Yearly</button>
   </div>
 
   <div class="goal-card">
     <div class="goal-sub" id="mode-label">Weekly P&L Goal</div>
     <div class="goal-main" id="display-goal">$0</div>
-    <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 5px;">0 Days Left</div>
+    <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 8px; font-weight: 700;">0 Days Left</div>
   </div>
 
   <div class="progress-container">
@@ -106,29 +129,64 @@
     </div>
   </div>
 
+  <div class="modal" id="goal-modal">
+    <div class="modal-content">
+      <div class="goal-sub" id="modal-title">Set Weekly Goal</div>
+      <input type="number" id="goal-input" placeholder="Enter Amount">
+      <button class="btn-action" onclick="saveGoal()">Update Objective</button>
+      <div class="goal-sub" style="margin-top: 15px; cursor: pointer;" onclick="closeModal()">Cancel</div>
+    </div>
+  </div>
+
 <script>
   let currentMode = 'weekly';
-  const goals = { weekly: 600, monthly: 2500, yearly: 30000 };
+  
+  // Load goals from local storage or set defaults
+  let goals = JSON.parse(localStorage.getItem('trading_goals_config')) || {
+    weekly: 600,
+    monthly: 2500,
+    yearly: 30000
+  };
 
   function toggleTheme() {
     const b = document.body;
     b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   }
 
-  function setMode(mode, btn) {
+  function openModal() {
+    document.getElementById('goal-modal').style.display = 'flex';
+    document.getElementById('modal-title').textContent = `Set ${currentMode} Goal`;
+    document.getElementById('goal-input').value = goals[currentMode];
+    document.getElementById('goal-input').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('goal-modal').style.display = 'none';
+  }
+
+  function saveGoal() {
+    const newVal = parseFloat(document.getElementById('goal-input').value);
+    if(newVal > 0) {
+      goals[currentMode] = newVal;
+      localStorage.setItem('trading_goals_config', JSON.stringify(goals));
+      closeModal();
+      updateTracker();
+    }
+  }
+
+  function setMode(mode) {
     currentMode = mode;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    document.getElementById(`btn-${mode}`).classList.add('active');
     updateTracker();
   }
 
   function getDaysLeft() {
     const now = new Date();
     if (currentMode === 'weekly') {
-      // 6 is Saturday (reset day)
-      let days = 6 - now.getDay();
-      if (days <= 0) days = 0;
-      return days + " Days Left";
+      let days = 6 - now.getDay(); // Saturday reset
+      if (days < 0) days = 6; 
+      return days === 0 ? "Last Day!" : days + " Days Left";
     } else if (currentMode === 'monthly') {
       const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
       return (lastDay - now.getDate()) + " Days Left";
@@ -142,8 +200,6 @@
   function updateTracker() {
     const history = JSON.parse(localStorage.getItem('notion_trade_history') || '[]');
     const goal = goals[currentMode];
-    
-    // Calculate P&L based on current timeframe
     const now = new Date();
     let currentPnl = 0;
 
@@ -154,6 +210,7 @@
       if (currentMode === 'weekly') {
         const startOfWeek = new Date(now);
         startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0,0,0,0);
         if (tDate >= startOfWeek) inScope = true;
       } else if (currentMode === 'monthly') {
         if (tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear()) inScope = true;
@@ -167,10 +224,10 @@
     const remaining = goal - currentPnl;
     const pct = Math.min(Math.round((currentPnl / goal) * 100), 100);
 
-    // Update UI
-    document.getElementById('display-goal').textContent = `$${goal}`;
-    document.getElementById('remaining-val').textContent = `$${remaining > 0 ? remaining : 0}`;
-    document.getElementById('current-pnl-text').textContent = `$${currentPnl} Earned`;
+    // DOM Updates
+    document.getElementById('display-goal').textContent = `$${goal.toLocaleString()}`;
+    document.getElementById('remaining-val').textContent = `$${(remaining > 0 ? remaining : 0).toLocaleString()}`;
+    document.getElementById('current-pnl-text').textContent = `$${currentPnl.toLocaleString()} Earned`;
     document.getElementById('pct-text').textContent = pct + '%';
     document.getElementById('deadline-text').textContent = getDaysLeft();
     document.getElementById('mode-label').textContent = currentMode.toUpperCase() + " P&L GOAL";
@@ -186,22 +243,25 @@
       badge.textContent = "Goal Smashed";
       badge.className = "status-badge on-track";
       fill.style.backgroundColor = "var(--green)";
+      fill.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
       spawnArrows(arrowLayer, 'up');
     } else if (pct > 50) {
-      badge.textContent = "On Track";
+      badge.textContent = "On Pace";
       badge.className = "status-badge on-track";
       fill.style.backgroundColor = "var(--accent)";
+      fill.style.boxShadow = "0 0 15px rgba(34, 211, 238, 0.3)";
       spawnArrows(arrowLayer, 'up');
     } else {
       badge.textContent = "Behind";
       badge.className = "status-badge off-track";
       fill.style.backgroundColor = "var(--red)";
+      fill.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.3)";
       spawnArrows(arrowLayer, 'down');
     }
   }
 
   function spawnArrows(container, dir) {
-    for(let i=0; i<4; i++) {
+    for(let i=0; i<5; i++) {
       const a = document.createElement('div');
       a.className = `arrow ${dir === 'up' ? 'up-anim' : 'down-anim'}`;
       a.style.left = (Math.random() * 80 + 10) + '%';
@@ -212,7 +272,7 @@
     }
   }
 
-  // Auto-refresh when localStorage changes (e.g. from the other widget)
+  // Syncs with the Journal widget automatically
   window.addEventListener('storage', updateTracker);
   window.onload = updateTracker;
 </script>
