@@ -3,163 +3,218 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Performance Monitor | Trading Goals</title>
+<title>Elite Performance Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #0e0e0f; --surface: #18181b; --border: #2a2a2e;
     --text: #f4f4f5; --muted: #71717a; --accent: #22d3ee;
-    --green: #4ade80; --red: #f87171; --yellow: #facc15; --mono: 'DM Mono', monospace; --syne: 'Syne', sans-serif;
+    --green: #4ade80; --red: #f87171; --mono: 'DM Mono', monospace; --syne: 'Syne', sans-serif;
   }
   [data-theme="light"] {
     --bg: #f4f4f5; --surface: #ffffff; --border: #e4e4e7;
     --text: #09090b; --muted: #71717a; --accent: #0891b2;
   }
-  body { background: var(--bg); color: var(--text); font-family: var(--mono); padding: 20px; transition: 0.3s; }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); padding: 15px; transition: 0.3s; overflow: hidden; }
 
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-  .title { font-family: var(--syne); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+  .title { font-family: var(--syne); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
 
-  /* New High-Impact Header */
-  .goal-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 25px 20px; margin-bottom: 20px; text-align: center; }
-  .goal-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
-  .goal-val { 
-    font-family: Impact, sans-serif; 
-    font-size: 64px; 
-    line-height: 1; 
-    text-transform: uppercase;
-    color: var(--text); 
-    letter-spacing: -2px;
-    margin-bottom: 5px; 
+  /* Goal Header */
+  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 15px; }
+  .goal-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+  .goal-main { font-family: Impact, sans-serif; font-size: 48px; line-height: 1; letter-spacing: -1px; }
+
+  /* Nav Tabs */
+  .nav-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+  .tab-btn { 
+    flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--muted); 
+    padding: 8px; border-radius: 6px; cursor: pointer; font-size: 10px; text-transform: uppercase; transition: 0.2s;
   }
-  
-  /* Segmented Navigation */
-  .segment-nav { display: flex; gap: 8px; margin-bottom: 25px; }
-  .seg-btn {
-    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-    padding: 10px; border-radius: 6px; cursor: pointer; font-size: 11px; text-transform: uppercase; transition: 0.2s;
-  }
-  .seg-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(34, 211, 238, 0.05); }
+  .tab-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(34, 211, 238, 0.05); }
 
-  /* Modern Pulsing Progress Bar */
-  .progress-wrap { margin-bottom: 20px; position: relative; }
-  .progress-bar-container { height: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-  .progress-fill { height: 100%; width: 0%; border-radius: 10px; transition: width 0.5s ease-out; animation: pulseGlow 3s infinite; }
-  
-  .pct-readout { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 5px; }
-  
-  /* Performance Cards */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
-  .card-label { font-size: 9px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
-  .card-val { font-family: var(--mono); font-size: 18px; font-weight: 500; }
-  
-  /* The Badge System */
-  .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-family: var(--syne); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-  .badge-off-track { background: rgba(248, 113, 113, 0.1); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.3); }
-  .badge-on-track { background: rgba(34, 211, 238, 0.1); color: var(--accent); border: 1px solid rgba(34, 211, 238, 0.3); }
-  .badge-met { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.3); }
+  /* Progress Bar */
+  .progress-container { margin-bottom: 20px; }
+  .bar-bg { height: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 8px; }
+  .bar-fill { height: 100%; width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
 
-  /* Glow Animation */
-  @keyframes pulseGlow {
-    0% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.1); }
-    50% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
-    100% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.1); }
+  /* Status & Remaining Section */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .stat-box { 
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
+    padding: 15px; text-align: center; position: relative; overflow: hidden;
   }
+  .rem-val { font-family: Impact, sans-serif; font-size: 28px; color: var(--text); }
   
-  .edit-btn { background: var(--border); border: none; color: var(--muted); padding: 4px 8px; border-radius: 4px; font-size: 9px; cursor: pointer; }
-  .theme-toggle { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 50%; cursor: pointer; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
+  /* Status Badge & Arrows */
+  .status-badge { 
+    font-family: var(--syne); font-size: 10px; text-transform: uppercase; font-weight: 700;
+    padding: 5px 10px; border-radius: 4px; display: inline-block; position: relative; z-index: 2;
+  }
+  .off-track { background: rgba(248, 113, 113, 0.1); color: var(--red); border: 1px solid var(--red); }
+  .on-track { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid var(--green); }
+
+  .arrow { position: absolute; font-size: 18px; opacity: 0; pointer-events: none; z-index: 1; }
+  @keyframes fadeDown { 0% { transform: translateY(-20px); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(20px); opacity: 0; } }
+  @keyframes fadeUp { 0% { transform: translateY(20px); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(-20px); opacity: 0; } }
+  .down-anim { animation: fadeDown 2s infinite linear; }
+  .up-anim { animation: fadeUp 2s infinite linear; }
+
+  .theme-toggle { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px; border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body data-theme="dark">
 
   <div class="header">
-    <span class="title">Trading Goals</span>
+    <span class="title">Goal Monitor</span>
     <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
   </div>
-  
-  <div class="goal-panel">
-    <div class="goal-label">Weekly Objective <button class="edit-btn">EDIT</button></div>
-    <div class="goal-val" id="target-amount">$555</div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="setMode('weekly', this)">Weekly</button>
+    <button class="tab-btn" onclick="setMode('monthly', this)">Monthly</button>
+    <button class="tab-btn" onclick="setMode('yearly', this)">Yearly</button>
   </div>
 
-  <div class="segment-nav">
-    <button class="seg-btn active">Weekly</button>
-    <button class="seg-btn">Monthly</button>
-    <button class="seg-btn">Yearly</button>
+  <div class="goal-card">
+    <div class="goal-sub" id="mode-label">Weekly P&L Goal</div>
+    <div class="goal-main" id="display-goal">$0</div>
+    <div class="goal-sub" id="deadline-text" style="color: var(--accent); margin-top: 5px;">0 Days Left</div>
   </div>
 
-  <div class="progress-wrap">
-    <div class="progress-bar-container">
-      <div class="progress-fill" id="goal-progress" style="background: var(--red);"></div>
+  <div class="progress-container">
+    <div class="bar-bg">
+      <div class="bar-fill" id="progress-fill"></div>
     </div>
-    <div class="pct-readout">
-      <span>$125 of $555 P&L</span>
-      <span id="pct-val" style="color: var(--red)">23%</span>
+    <div class="progress-labels">
+      <span id="current-pnl-text">$0 Earned</span>
+      <span id="pct-text">0%</span>
     </div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="card-label">Remaining P&L</div>
-      <div class="card-val" id="rem-pnl">$430</div>
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="goal-sub">Remaining</div>
+      <div class="rem-val" id="remaining-val">$0</div>
     </div>
-    <div class="stat-card">
-      <div class="card-label">Performance Status</div>
-      <div class="badge badge-off-track" id="status-badge">Off Track</div>
+    <div class="stat-box" id="status-container">
+      <div class="goal-sub">Status</div>
+      <div id="arrow-layer"></div>
+      <div class="status-badge" id="status-badge">Awaiting Data</div>
     </div>
   </div>
 
 <script>
+  let currentMode = 'weekly';
+  const goals = { weekly: 600, monthly: 2500, yearly: 30000 };
+
   function toggleTheme() {
-    const body = document.body;
-    body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    const b = document.body;
+    b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   }
-  
-  // Simulation of the new dynamic styling logic
-  function updatePerformance(pnl, goal) {
-    const pct = Math.round((pnl / goal) * 100);
-    const remaining = goal - pnl;
-    
-    // Update Text Elements
-    document.getElementById('rem-pnl').textContent = '$' + remaining.toLocaleString();
-    document.getElementById('pct-val').textContent = pct + '%';
-    
-    // Dynamic Stying Logic
-    const fill = document.getElementById('goal-progress');
-    const badge = document.getElementById('status-badge');
-    
-    if (pct >= 100) {
-      fill.style.width = '100%';
-      fill.style.background = 'var(--green)';
-      fill.style.boxShadow = '0 0 15px rgba(74, 222, 128, 0.4)';
-      
-      badge.textContent = 'Objective Met';
-      badge.className = 'badge badge-met';
-    } 
-    else if (pct >= 60) {
-      fill.style.width = pct + '%';
-      fill.style.background = 'var(--accent)';
-      fill.style.boxShadow = '0 0 15px rgba(34, 211, 238, 0.3)';
-      
-      badge.textContent = 'On Pace';
-      badge.className = 'badge badge-on-track';
-    } 
-    else {
-      fill.style.width = pct + '%';
-      fill.style.background = 'var(--red)';
-      fill.style.boxShadow = '0 0 15px rgba(248, 113, 113, 0.3)';
-      
-      badge.textContent = 'NEEDS CALIBRATION'; // Switched to performance badge language
-      badge.className = 'badge badge-off-track';
+
+  function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateTracker();
+  }
+
+  function getDaysLeft() {
+    const now = new Date();
+    if (currentMode === 'weekly') {
+      // 6 is Saturday (reset day)
+      let days = 6 - now.getDay();
+      if (days <= 0) days = 0;
+      return days + " Days Left";
+    } else if (currentMode === 'monthly') {
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      return (lastDay - now.getDate()) + " Days Left";
+    } else {
+      const endOfYear = new Date(now.getFullYear(), 11, 31);
+      const diff = endOfYear - now;
+      return Math.floor(diff / (1000 * 60 * 60 * 24)) + " Days Left";
     }
   }
-  
-  // Simulation of the initial data load from the image
-  window.onload = () => {
-    updatePerformance(125, 555);
-  };
+
+  function updateTracker() {
+    const history = JSON.parse(localStorage.getItem('notion_trade_history') || '[]');
+    const goal = goals[currentMode];
+    
+    // Calculate P&L based on current timeframe
+    const now = new Date();
+    let currentPnl = 0;
+
+    history.forEach(trade => {
+      const tDate = new Date(trade.date);
+      let inScope = false;
+
+      if (currentMode === 'weekly') {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        if (tDate >= startOfWeek) inScope = true;
+      } else if (currentMode === 'monthly') {
+        if (tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear()) inScope = true;
+      } else {
+        if (tDate.getFullYear() === now.getFullYear()) inScope = true;
+      }
+
+      if (inScope) currentPnl += trade.pnl;
+    });
+
+    const remaining = goal - currentPnl;
+    const pct = Math.min(Math.round((currentPnl / goal) * 100), 100);
+
+    // Update UI
+    document.getElementById('display-goal').textContent = `$${goal}`;
+    document.getElementById('remaining-val').textContent = `$${remaining > 0 ? remaining : 0}`;
+    document.getElementById('current-pnl-text').textContent = `$${currentPnl} Earned`;
+    document.getElementById('pct-text').textContent = pct + '%';
+    document.getElementById('deadline-text').textContent = getDaysLeft();
+    document.getElementById('mode-label').textContent = currentMode.toUpperCase() + " P&L GOAL";
+
+    const fill = document.getElementById('progress-fill');
+    fill.style.width = pct + '%';
+
+    const badge = document.getElementById('status-badge');
+    const arrowLayer = document.getElementById('arrow-layer');
+    arrowLayer.innerHTML = '';
+
+    if (currentPnl >= goal) {
+      badge.textContent = "Goal Smashed";
+      badge.className = "status-badge on-track";
+      fill.style.backgroundColor = "var(--green)";
+      spawnArrows(arrowLayer, 'up');
+    } else if (pct > 50) {
+      badge.textContent = "On Track";
+      badge.className = "status-badge on-track";
+      fill.style.backgroundColor = "var(--accent)";
+      spawnArrows(arrowLayer, 'up');
+    } else {
+      badge.textContent = "Behind";
+      badge.className = "status-badge off-track";
+      fill.style.backgroundColor = "var(--red)";
+      spawnArrows(arrowLayer, 'down');
+    }
+  }
+
+  function spawnArrows(container, dir) {
+    for(let i=0; i<4; i++) {
+      const a = document.createElement('div');
+      a.className = `arrow ${dir === 'up' ? 'up-anim' : 'down-anim'}`;
+      a.style.left = (Math.random() * 80 + 10) + '%';
+      a.style.color = dir === 'up' ? 'var(--green)' : 'var(--red)';
+      a.style.animationDelay = (Math.random() * 2) + 's';
+      a.textContent = dir === 'up' ? '▲' : '▼';
+      container.appendChild(a);
+    }
+  }
+
+  // Auto-refresh when localStorage changes (e.g. from the other widget)
+  window.addEventListener('storage', updateTracker);
+  window.onload = updateTracker;
 </script>
 </body>
 </html>
